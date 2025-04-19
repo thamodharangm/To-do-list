@@ -1,72 +1,61 @@
+document.getElementById("add-btn").addEventListener("click", addTask);
+
 function addTask() {
-    const newTaskText = document.getElementById("newTask").value.trim(); // Trim spaces
-    if (newTaskText === "") return; // Prevent empty tasks
+  const taskInput = document.getElementById("task-input");
+  const taskText = taskInput.value.trim();
 
-    const taskList = document.getElementById("tasks");
-    const taskItem = document.createElement("li");
-    taskItem.className = "task";
+  if (taskText !== "") {
+    const taskList = document.getElementById("task-list");
 
-    // Initialize the edit count to 0 and store it as a dataset property
-    taskItem.dataset.editCount = 0;
+    const li = document.createElement("li");
+    li.classList.add("task-item");
 
-    taskItem.innerHTML = `
-        <input type="text" value="${newTaskText}" readonly>
-        <button class="editTask"><i class="fa-regular fa-pen-to-square"></i></button>
-        <button class="completeTask"><i class="fa-solid fa-check"></i></button>
-        <button class="deleteTask"><i class="fa-solid fa-trash"></i></button>
-        <span class="editCount"><i class="fa-solid fa-message"></i></span>
-    `;
+    // Create input field for task text
+    const inputField = document.createElement("input");
+    inputField.type = "text";
+    inputField.value = taskText;
+    inputField.disabled = true;
 
-    taskList.appendChild(taskItem);
+    // Create delete button
+    const deleteButton = document.createElement("button");
+    deleteButton.classList.add("delete-btn");
+    deleteButton.textContent = "Delete";
 
-    // Clear the input field
-    document.getElementById("newTask").value = "";
+    // Add input field and delete button to the list item
+    li.appendChild(inputField);
+    li.appendChild(deleteButton);
 
-    // Attach event listeners
-    const editButton = taskItem.querySelector(".editTask");
-    const completeButton = taskItem.querySelector(".completeTask");
-    const deleteButton = taskItem.querySelector(".deleteTask");
+    // Mark task as completed when clicked
+    li.addEventListener("click", function() {
+      li.classList.toggle("completed");
+    });
 
-    editButton.addEventListener("click", () => editTask(taskItem));
-    completeButton.addEventListener("click", () => completeTask(taskItem));
-    deleteButton.addEventListener("click", () => deleteTask(taskItem));
-}
+    // Delete task when delete button is clicked
+    deleteButton.addEventListener("click", function(e) {
+      e.stopPropagation(); // Prevent marking as completed
+      deleteTask(li); // Call deleteTask function
+    });
 
-function editTask(taskItem) {
-    const taskInput = taskItem.querySelector("input[type='text']");
-    const editButton = taskItem.querySelector(".editTask");
-    const editCountSpan = taskItem.querySelector(".editCount");
-
-    if (taskInput.readOnly) {
-        taskInput.readOnly = false;
-        taskInput.focus();
-        editButton.innerHTML = `<i class="fa-regular fa-floppy-disk"></i>`;
-    } else {
-        taskInput.readOnly = true;
-
-        // Increment the edit count and update the display
-        taskItem.dataset.editCount = parseInt(taskItem.dataset.editCount) + 1;
-        editCountSpan.textContent = `[${taskItem.dataset.editCount}]`;
-
-        editButton.innerHTML = `<i class="fa-regular fa-pen-to-square"></i>`;
-    }
-}
-
-function completeTask(taskItem) {
-    const taskInput = taskItem.querySelector("input[type='text']");
-    taskInput.classList.toggle("strikethrough");
-    taskItem.querySelector(".editTask").style.display = "none";
-    taskItem.querySelector(".completeTask").style.display = "none";
+    taskList.appendChild(li);
+    taskInput.value = ""; // Clear input field
+  }
 }
 
 function deleteTask(taskItem) {
-    taskItem.remove();
+  const taskInput = taskItem.querySelector("input[type='text']");
+  const taskName = taskInput.value;
+  taskItem.remove();
+  showPopup(`"${taskName}" deleted successfully!`);
 }
 
-document.getElementById("newTask").addEventListener("keypress", (event) => {
-    if (event.key === "Enter") {
-        addTask();
-    }
-});
+function showPopup(message) {
+  const popup = document.createElement("div");
+  popup.classList.add("popup");
+  popup.textContent = message;
+  document.body.appendChild(popup);
 
-document.getElementById("addTask").addEventListener("click", addTask);
+  // Remove popup after 3 seconds
+  setTimeout(() => {
+    popup.remove();
+  }, 3000);
+}
